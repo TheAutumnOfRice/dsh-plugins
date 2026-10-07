@@ -63,7 +63,7 @@
     },
     "compat": {
       "minHost": "0.1.5-rc.1",
-      "verifiedHost": "0.1.7-rc.2"
+      "verifiedHost": "0.2.0-rc.2"
     }
   },
   "scripts": {

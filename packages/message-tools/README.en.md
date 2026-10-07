@@ -53,6 +53,8 @@ The plugin list of `/m` (dsh-mobile-ui's phone UI) gains a **Messages** entry: w
 
 **Version line mapping**: the first release after 0.2.0 supports host `0.1.5-rc.1` and later; hosts on `0.1.2-rc.1` stay on `0.2.0`, hosts on `0.1.0-rc.6` ~ `0.1.1-rc.2` stay on the 0.1.x release line (last release `0.1.0`).
 
+**This fork (`TheAutumnOfRice/dsh-plugins`)**: `verifiedHost` moves up to `0.2.0-rc.2` — the `/m` surface was exercised on that host (a phone-side withdraw and restore landed, and the desktop rendered the matching withdrawal divider for the same session), and the repository's `scripts/gen-typert.mts` now builds on Windows (see CHANGELOG 0.4.0).
+
 ## Known Limitations
 
 - **Full-span hiding relies on an undocumented DOM attribute** — if upstream drops it, hiding degrades to renderer-only (user messages still hidden) with one `console.warn`, never an error.

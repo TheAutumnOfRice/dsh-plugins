@@ -53,6 +53,8 @@ dsh plugin --profile web remove @khorsheed/dsh-client-message-tools
 
 **版本线对照**：0.2.0 之后的首个发布起支持宿主 `0.1.5-rc.1` 及以后；宿主 `0.1.2-rc.1` 请停留在 `0.2.0`，宿主 `0.1.0-rc.6` ~ `0.1.1-rc.2` 请停留在 0.1.x 发布线（末版 `0.1.0`）。
 
+**本 fork（`TheAutumnOfRice/dsh-plugins`）**：`verifiedHost` 前移至 `0.2.0-rc.2`——`/m` 面在该宿主上实测（手机端撤回 / 恢复落地，桌面端同一会话渲染出对应的撤回分隔线），仓库根的 `scripts/gen-typert.mts` 也修好了 Windows 路径（见 CHANGELOG 0.4.0）。
+
 ## 已知限制
 
 - **全区间隐藏依赖一个未文档化的 DOM 属性**——上游若移除它，隐藏退化为仅渲染器层（用户消息仍被隐藏），`console.warn` 一次，绝不报错。
