@@ -17,10 +17,12 @@ import { SessionSeq } from '@deepseek-ai/dsh-session'
 import type {} from '@deepseek-ai/dsh-agent'
 import { createUserMessage } from '@deepseek-ai/dsh-llm'
 import { Remote, TypertRemoteService } from '@deepseek-ai/dsh-typert-protocol'
+import type {} from '@deepseek-ai/dsh-host-webserver'
 import {
   EDIT_TRIGGER_NOTICE, WITHDRAWN_NOTICE,
   editReplacementSource, editTriggerSource, messageToolsSource, restoreAssistantSource,
 } from './marker.ts'
+import { mobileRoutes } from './mobile-api.ts'
 import { registerRestoreProjection } from './restore-projection.ts'
 import { planEdit, planRestore, planWithdrawal } from './withdraw.ts'
 import type {
@@ -56,6 +58,17 @@ export class MessageToolsService extends TypertRemoteService {
     // projection, restore replays derive assistant-role without the frame;
     // every degrade path leaves the framed user-role channel verbatim.
     registerRestoreProjection(ctx)
+    // The /m (phone) surface: the mobile UI is plain browser JS with no Remote
+    // client, so it drives the same three methods through two same-origin
+    // routes. `inject` is scoped and optional — a headless/TUI composition has
+    // no web server and keeps its full service without these routes.
+    ctx.inject(['webServer'], (webCtx) => {
+      const webServer = webCtx.get('webServer')
+      if (webServer === undefined) return
+      const routes = mobileRoutes(webCtx, this)
+      webCtx.effect(() => webServer.register(routes.state), 'message-tools: /m state route')
+      webCtx.effect(() => webServer.register(routes.action), 'message-tools: /m action route')
+    })
   }
 
   /**

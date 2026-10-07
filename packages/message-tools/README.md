@@ -36,6 +36,16 @@ dsh plugin --profile web add @khorsheed/dsh-client-message-tools
 dsh plugin --profile web remove @khorsheed/dsh-client-message-tools
 ```
 
+## 手机端（/m）
+
+`/m`（dsh-mobile-ui 的手机界面）的插件标签页里会多一个 **消息工具**：手机上同样能撤回、编辑重发、恢复。
+
+- 列表按时间倒序给出当前会话里**可操作的消息**——原始消息、编辑替换、恢复重放，正是撤回与编辑会接受的那些目标（撤回占位符、编辑触发消息、助手文本重放不在此列，因为服务端不会接受对它们的操作）。每条显示 seq、状态（生效中 / 已撤回）、来源（已编辑 / 已恢复）与正文；生效中的行有 `撤回` / `编辑重发`，已撤回的行有 `恢复`，含图片的消息会标注「含图片」（编辑器只带文本，与桌面一致）。
+- 手机端没有 Remote 客户端，页面走本插件自己的两条**同源**路由：`GET /message-tools/m/state?session=<id>` 读列表，`POST /message-tools/m/action` 执行 `{action: withdraw|edit|restore, sessionId, targetSeq, text?}`。两条路由调用与桌面**同一个** service 方法，所以手机上的操作落地的替换事件与桌面完全一致，不引入任何新的事件类型。
+- 两条路由只接受同源请求（带 `Origin` 时必须与 `Host` 同源；`Sec-Fetch-Site` 非 `same-origin`/`none` 直接 403），POST 必须是 `application/json` 且 ≤64 KiB。**刻意不校验 cookie**：/m 常从局域网地址或隧道进入，那里没有 `dsh-auth-*` cookie（dsh-mobile-ui 正因此自己重发 RPC 路径），校验 cookie 会把手机挡在门外。
+- 渲染器固定在 `<包>/lib/mobile/plugin.js`，由 dsh-mobile-ui 在启动时从 profile 依赖里发现——**新增或改动渲染器文件需要重启 dsh web**；构建脚本（`pnpm run build`）会把仓库里的 `mobile/plugin.js` 复制到 `lib/mobile/`。
+- `@deepseek-ai/dsh-host-webserver` 是**可选** peer：没有 Web 服务器的组合（headless、桌面宿主）不挂这两条路由，服务与工具能力完全不变。
+
 ## Compatibility
 
 - npm 发布线（`@deepseek-ai/dsh@0.1.5-rc.1`）：✅ 完整——适配 0.1.5-rc.1 的 format v2/v3（`assistant/attempt` 取代 `assistant/chunk`；surfaceOp replace 字段 `start`/`end` 更名 `startSeq`/`endSeq`），全量构建测试通过；minHost 前移至 0.1.5-rc.1，旧宿主请停留在旧发布线。Session V4 的生产者归属 source（kind `message-tools`）在 0.1.5 宿主同样合法落盘：0.1.5 的 `user/message` 准入只要求非空 kind 字符串。

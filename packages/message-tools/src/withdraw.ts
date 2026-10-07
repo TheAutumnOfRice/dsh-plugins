@@ -19,7 +19,7 @@ import {
  * replacement is the surface node). Assistant-text restore replays carry no
  * actions and are excluded.
  */
-function isEditableTarget(event: SessionEvent | undefined): event is SessionEvent<'user/message'> {
+export function isEditableTarget(event: SessionEvent | undefined): event is SessionEvent<'user/message'> {
   if (event === undefined || event.type !== 'user/message') return false
   if (isAppendSurfaceEvent(event)) {
     return event.data.source.kind === 'user' || isMessageToolsRestore(event)

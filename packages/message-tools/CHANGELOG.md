@@ -1,5 +1,14 @@
 # 变更记录
 
+## 0.4.0（2026-10-08）
+
+新增 `/m` 手机端面：手机上也能撤回 / 编辑重发 / 恢复用户消息。
+
+- **Host 半部分**：新增两条同源路由 `GET /message-tools/m/state?session=<id>`（按时间倒序返回当前会话可操作消息的行数据：seq、正文、生效中/已撤回、来源、是否含图）与 `POST /message-tools/m/action`（`{action: withdraw|edit|restore, sessionId, targetSeq, text?}`），转发给与 Remote 完全相同的 service 方法，因此手机与桌面落地的替换事件一致，不引入任何新事件类型。两条路由只接受同源请求（带 `Origin` 时必须等于 `Host`，`Sec-Fetch-Site` 非 `same-origin`/`none` 一律 403），POST 限 `application/json` 且 ≤64 KiB，并**刻意不校验 cookie**——/m 常从局域网地址或隧道进入，那里没有 `dsh-auth-*` cookie（dsh-mobile-ui 正因此自行重发 RPC 路径），校验 cookie 会把手机挡在门外。
+- **浏览器半部分**：新增 `<包>/lib/mobile/plugin.js`，向 dsh-mobile-ui 注册「消息工具」插件标签页：当前会话的可操作消息列表 + `撤回` / `编辑重发` / `恢复`（含图片的消息标注「含图片」）。构建脚本把仓库里的 `mobile/plugin.js` 复制到 `lib/mobile/`。
+- **依赖**：`@deepseek-ai/dsh-host-webserver` 作为**可选** peer（`peerDependenciesMeta.optional`）加入——没有 Web 服务器的 headless/桌面组合不挂这两条路由，服务与工具面完全不变。
+- **仓库工具**：`scripts/gen-typert.mts` 的仓库根改用 `fileURLToPath`。`new URL('..', import.meta.url).pathname` 在 Windows 上给出 `/F:/…`，join 之后变成 `F:\F:\…`，于是 Windows 上任何包的构建都会在读取 `package.json` 时 ENOENT。
+
 ## 0.3.3（2026-09-30）
 
 无功能变更。加宽 `@deepseek-ai/dsh-*` peer 区间以覆盖宿主 0.2.0（0.2.0 的兼容闸会禁用 peer 区间不覆盖宿主版本的已装插件）。

@@ -9,6 +9,7 @@
     "src/index.ts",
     "src/invariant.ts",
     "src/marker.ts",
+    "src/mobile-api.ts",
     "src/restore-projection.ts",
     "src/types.ts",
     "src/withdraw.ts"

@@ -36,6 +36,16 @@ Restart the web instance to activate; uninstall restores the previous compositio
 dsh plugin --profile web remove @khorsheed/dsh-client-message-tools
 ```
 
+## Phone (/m)
+
+The plugin list of `/m` (dsh-mobile-ui's phone UI) gains a **Messages** entry: withdraw, edit-and-resend, and restore work from the phone too.
+
+- The list shows the session's **actionable messages** newest first — originals, edit replacements, and restore replays, exactly the targets withdraw/edit accept (withdrawal placeholders, edit triggers, and assistant-text replays are absent, because the service rejects actions on them). Each row carries its seq, state (Live / Withdrawn), origin (Edited / Restored) and text; live rows offer `Edit & resend` / `Withdraw`, withdrawn rows offer `Restore`, and an image-carrying message is flagged (the editor is text-only, matching the desktop).
+- The phone has no Remote client, so the page uses this plugin's own two **same-origin** routes: `GET /message-tools/m/state?session=<id>` for the list and `POST /message-tools/m/action` for `{action: withdraw|edit|restore, sessionId, targetSeq, text?}`. Both call the **same** service methods the desktop does, so a phone action lands the identical replacement event and introduces no new event type.
+- Both routes accept same-origin requests only (an `Origin` must match `Host`; a `Sec-Fetch-Site` other than `same-origin`/`none` is refused with 403), and a POST must be `application/json` under 64 KiB. They deliberately do **not** require a cookie: `/m` is commonly reached over a LAN address or a tunnel where the `dsh-auth-*` cookie is absent (which is why dsh-mobile-ui re-serves the RPC paths itself), so a cookie check would lock out the very client this surface exists for.
+- The renderer lives at `<package>/lib/mobile/plugin.js` and is discovered by dsh-mobile-ui from the profile dependencies at boot — **adding or changing it needs a dsh web restart**; the build (`pnpm run build`) copies the repository's `mobile/plugin.js` into `lib/mobile/`.
+- `@deepseek-ai/dsh-host-webserver` is an **optional** peer: compositions without a Web server (headless, desktop host) simply do not mount these routes, and keep the full service and tool surface.
+
 ## Compatibility
 
 - npm release line (`@deepseek-ai/dsh@0.1.5-rc.1`): ✅ full — adapted to the 0.1.5-rc.1 format v2/v3 (`assistant/attempt` replaces `assistant/chunk`; the surfaceOp replace fields `start`/`end` are renamed `startSeq`/`endSeq`), full build+test green; minHost moves up to 0.1.5-rc.1 — older hosts stay on the previous release line. The Session V4 producer-owned source (kind `message-tools`) also writes durably on a 0.1.5 host: 0.1.5's `user/message` admission only requires a non-empty kind string.
