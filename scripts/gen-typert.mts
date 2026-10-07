@@ -175,7 +175,10 @@ interface WorkspaceGenerator {
   generate(packages?: readonly string[], faces?: readonly string[]): FaceArtifact[]
 }
 
-const repoRoot = new URL('..', import.meta.url).pathname
+// `new URL(...).pathname` is a URL path, not a filesystem path: on Windows it
+// yields "/F:/project/dsh-plugins/", and joining it produced "F:\F:\project\…"
+// (every readFileSync below then ENOENTs). fileURLToPath is the fs spelling.
+const repoRoot = fileURLToPath(new URL('..', import.meta.url))
 const harness = process.env['DSH_HARNESS'] ?? join(homedir(), 'code/deepseek-harness')
 const dshHome = process.env['DSH_HOME'] ?? join(homedir(), '.dsh')
 // One overlay per process: `pnpm -r build` invokes this script from several
